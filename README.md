@@ -6,6 +6,7 @@ in .env file.
 
 Run
 ```python main.py```
+- How to get your access token [link](https://dev.to/bitsrfr/getting-started-with-the-mastodon-api-41jj) 
 
 # Live page 
 Just need a mastodon access token and the instance URL.
