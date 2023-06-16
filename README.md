@@ -1,4 +1,4 @@
-# mastodon-links
+# Mastodon-links
 Script to get urls from my following profile pages.
 
 # Live page 
