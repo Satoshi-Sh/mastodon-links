@@ -24,7 +24,7 @@ def get(token,url):
                 links.append({"title":field.name,"link":field.value.split('"')[1]})
         info['links']=links
         data.append(info)
-    filename = "sample_data/following_url.json"
+    filename = "data/following_url.json"
 
     # Open the file in write mode
     with open(filename, "w") as file:
