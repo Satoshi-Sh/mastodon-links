@@ -3,7 +3,7 @@ from mastodon import Mastodon;
 from dotenv import dotenv_values;
 env_vars = dotenv_values('.env')
 
-def get(token,url):
+def getData(token,url,isFile=True):
     mastodon = Mastodon(
         access_token=token,
         api_base_url=url,
@@ -24,18 +24,23 @@ def get(token,url):
                 links.append({"title":field.name,"link":field.value.split('"')[1]})
         info['links']=links
         data.append(info)
-    filename = "data/following_url.json"
+    
+    if isFile:
+        filename = "data/following_url.json"
 
-    # Open the file in write mode
-    with open(filename, "w") as file:
-        # Write the dictionary data to the file as JSON
-        json.dump(data, file)
+        # Open the file in write mode
+        with open(filename, "w") as file:
+            # Write the dictionary data to the file as JSON
+            json.dump(data, file)
 
-    print("JSON file created: ", filename)
+        print("JSON file created: ", filename)
+    else:
+        # get json string 
+        return json.dumps(data)
 
 
 def main():
-    get(env_vars['ACCESS_TOKEN'],env_vars['API_URL'])
+    getData(env_vars['ACCESS_TOKEN'],env_vars['API_URL'])
 
 if __name__== '__main__':
     main()
