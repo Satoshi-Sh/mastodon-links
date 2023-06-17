@@ -1,30 +1,80 @@
 import json
+import csv
 from mastodon import Mastodon;
 from dotenv import dotenv_values;
 env_vars = dotenv_values('.env')
+import argparse
+import requests 
+import sys
 
-def getData(token,url,isFile=True):
+
+def getFollowings(token,url,isJSON,isFile):
+    following = []
     mastodon = Mastodon(
         access_token=token,
         api_base_url=url,
     )
 
     account_id = mastodon.account_verify_credentials()['id']
-    following = mastodon.account_following(account_id)
-    
+    # Initial API request
+    url = f"{url}/api/v1/accounts/{account_id}/following"
+    headers = {"Authorization": f"Bearer {token}"}
+    params = {"limit": 40}
+    response = requests.get(url, headers=headers, params=params)
+
+    while response.status_code == 200:
+        data = response.json()
+        following.extend(data)
+        
+        link_header = response.headers.get("Link")
+        if not link_header:
+           break
+
+        links = requests.utils.parse_header_links(link_header)
+        # Check if there is a next URL in the response
+        print(links[0])
+        if len(links)>0 and links[0]['rel']=='next':
+            next_url = links[0]['url']
+            response = requests.get(next_url, headers=headers)
+        else:
+            break
+
+    if isJSON:
+        makeJSON(isFile,following)
+    else:
+        makeCSV(isFile,following)
+
+def process_arguments():
+    # Create an ArgumentParser object
+    parser = argparse.ArgumentParser(description='Example script with flags.')
+
+    # Add flags or arguments
+    parser.add_argument('-f', '--file', type=str, help='Choose File Format json or csv')
+
+    # Parse the command-line arguments
+    args = parser.parse_args()
+
+    # Access the flag and argument
+    if args.file:
+       print(f"Hello, {args.file}!")
+       if args.file.lower()=='csv':
+           return False
+    return True
+
+def makeJSON(isFile,following):
     data = []
     for account in following:
         info = {}
         info['display_name'] =  account['display_name']
         info['username'] =  account['username']
-        info['account'] =  account['acct']
+        info['account_url'] =  account['url']
         links= []
         for field in account['fields']:
-            if "http" in field.value:
-                links.append({"title":field.name,"link":field.value.split('"')[1]})
+            if "value" in field and "http" in field["value"]:
+                links.append({"title":field["name"],"link":field["value"].split('"')[1]})
         info['links']=links
         data.append(info)
-    
+        
     if isFile:
         filename = "data/following_url.json"
 
@@ -37,10 +87,55 @@ def getData(token,url,isFile=True):
     else:
         # get json string 
         return json.dumps(data)
+def makeCSV(isFile,following):
+    print(following[-1])
+    data = [['username',"account","account_url","title","url"]]
+    for account in following:
+        for field in account['fields']:
+            if  'value' in field  and "http" in field['value']:
+                print(account)
+                info=[account['username'],account['acct'],account['url'],field['name'],field['value'].split('"')[1]]
+                data.append(info)
+    if isFile:
+        filename = "data/following_url.csv"
+
+        # Open the file in write mode
+        with open(filename, "w",newline="") as file:
+            writer = csv.writer(file)
+            writer.writerows(data)
+
+        print("CSV file created: ", filename)
+
+
+
+def getData(token,url,isFile=True, isJSON=True):
+    mastodon = Mastodon(
+        access_token=token,
+        api_base_url=url,
+    )
+
+    account_id = mastodon.account_verify_credentials()['id']
+    # following return only 40 accounts
+    following = []
+    max_id=None
+    limit=40
+    while True:
+        response = mastodon.account_following(account_id, limit=limit, max_id=max_id)
+        print([a.id for a in response])
+        break
+        following.extend(response)
+        if len(response) <limit:
+            break
+        max_id = response[0]['id']
+
+    print(len(following))
+    
 
 
 def main():
-    getData(env_vars['ACCESS_TOKEN'],env_vars['API_URL'])
+    isJSON= process_arguments()
+    getFollowings(env_vars['ACCESS_TOKEN'],env_vars['API_URL'],isJSON,isFile=True)
+    
 
 if __name__== '__main__':
     main()
