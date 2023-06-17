@@ -11,7 +11,7 @@ Run
 
 # Live page 
 Just need a mastodon access token and the instance URL.
-https://satoshi-sh-mastodon-links-frontend-2t1ln0.streamlit.app/
+https://mastodon-links.streamlit.app/
 
 ## JSON File Format 
 ```
