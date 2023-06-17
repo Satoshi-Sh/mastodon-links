@@ -27,3 +27,6 @@ https://satoshi-sh-mastodon-links-frontend-2t1ln0.streamlit.app/
       },
     ]},....]
 ```
+
+## CSV File Format 
+```username,account,account_url,title,url```
