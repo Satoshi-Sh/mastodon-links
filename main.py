@@ -5,7 +5,12 @@ from dotenv import dotenv_values;
 env_vars = dotenv_values('.env')
 import argparse
 import requests 
-import sys
+
+def generate_csv(data):
+    csv_data = ''
+    for row in data:
+        csv_data += ','.join(row) + '\n'
+    return csv_data
 
 
 def getFollowings(token,url,isJSON,isFile):
@@ -32,17 +37,18 @@ def getFollowings(token,url,isJSON,isFile):
 
         links = requests.utils.parse_header_links(link_header)
         # Check if there is a next URL in the response
-        print(links[0])
         if len(links)>0 and links[0]['rel']=='next':
             next_url = links[0]['url']
+            print(next_url)
             response = requests.get(next_url, headers=headers)
         else:
+            print("Went through all the pages...")
             break
 
     if isJSON:
-        makeJSON(isFile,following)
+        return makeJSON(isFile,following)
     else:
-        makeCSV(isFile,following)
+        return makeCSV(isFile,following)
 
 def process_arguments():
     # Create an ArgumentParser object
@@ -56,9 +62,10 @@ def process_arguments():
 
     # Access the flag and argument
     if args.file:
-       print(f"Hello, {args.file}!")
+       print(f"Creating a {args.file} file...")
        if args.file.lower()=='csv':
            return False
+    print(f"Creating a JSON file...")
     return True
 
 def makeJSON(isFile,following):
@@ -86,14 +93,13 @@ def makeJSON(isFile,following):
         print("JSON file created: ", filename)
     else:
         # get json string 
+        print("File is ready to download!!")
         return json.dumps(data)
 def makeCSV(isFile,following):
-    print(following[-1])
     data = [['username',"account","account_url","title","url"]]
     for account in following:
         for field in account['fields']:
             if  'value' in field  and "http" in field['value']:
-                print(account)
                 info=[account['username'],account['acct'],account['url'],field['name'],field['value'].split('"')[1]]
                 data.append(info)
     if isFile:
@@ -105,31 +111,9 @@ def makeCSV(isFile,following):
             writer.writerows(data)
 
         print("CSV file created: ", filename)
-
-
-
-def getData(token,url,isFile=True, isJSON=True):
-    mastodon = Mastodon(
-        access_token=token,
-        api_base_url=url,
-    )
-
-    account_id = mastodon.account_verify_credentials()['id']
-    # following return only 40 accounts
-    following = []
-    max_id=None
-    limit=40
-    while True:
-        response = mastodon.account_following(account_id, limit=limit, max_id=max_id)
-        print([a.id for a in response])
-        break
-        following.extend(response)
-        if len(response) <limit:
-            break
-        max_id = response[0]['id']
-
-    print(len(following))
-    
+    else:
+        print("File is ready to download!!")
+        return generate_csv(data)
 
 
 def main():
