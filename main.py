@@ -25,11 +25,11 @@ def getFollowings(token,url,isJSON,isFile):
     # Initial API request
     url = f"{url}/api/v1/accounts/{account_id}/following"
     headers = {"Authorization": f"Bearer {token}"}
-    params = {"limit": 40}
+    params = {"limit": 80}
     response = requests.get(url, headers=headers, params=params)
 
     while response.status_code == 200:
-        time.sleep(1)
+        time.sleep(0.5)
         data = response.json()
         following.extend(data)
         
