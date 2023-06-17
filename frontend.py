@@ -15,7 +15,7 @@ def main():
         if (token=="" or url==""):
            st.write("Please give me token and the instance url")
         else:
-           json_str= getData(token,url,False)
+           json_str= getData(token,url.lower(),False)
            if json_str:
               st.download_button("Download JSON",data=json_str,file_name="following_url.json")
            else:
