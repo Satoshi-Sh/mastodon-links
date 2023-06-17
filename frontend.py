@@ -6,6 +6,7 @@ def main():
     st.title("Get Mastodon Followers URL")
     st.write("We just need your access token and the url of your instance to craete a json file with your followings' url")
     st.markdown("How to get an access token [guide](https://dev.to/bitsrfr/getting-started-with-the-mastodon-api-41jj#:~:text=Find%20your%20access%20token)")
+    st.markdown("It might take some time to retrieve data according to the number of your following")
     token = st.text_input("Enter your access Token.")
     url = st.text_input("Enter your instance url. ex. https://mastodon.xyz")
 

@@ -5,6 +5,7 @@ from dotenv import dotenv_values;
 env_vars = dotenv_values('.env')
 import argparse
 import requests 
+import time
 
 def generate_csv(data):
     csv_data = ''
@@ -28,6 +29,7 @@ def getFollowings(token,url,isJSON,isFile):
     response = requests.get(url, headers=headers, params=params)
 
     while response.status_code == 200:
+        time.sleep(1)
         data = response.json()
         following.extend(data)
         
